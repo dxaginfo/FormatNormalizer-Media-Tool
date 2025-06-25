@@ -22,6 +22,7 @@ import shutil
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException, BackgroundTasks, Query
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from .normalizer import FormatNormalizer, BatchProcessor
@@ -76,9 +77,14 @@ class NormalizationRequest(BaseModel):
 class JobQuery(BaseModel):
     job_id: str
 
+# Mount static files
+static_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "static")
+if os.path.exists(static_dir):
+    app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
+
 # Routes
-@app.get("/")
-async def root():
+@app.get("/api")
+async def api_root():
     """API root endpoint."""
     return {"message": "FormatNormalizer API", "version": "1.0.0"}
 
