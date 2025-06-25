@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FormatNormalizer - Media Format Conversion Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            background-color: #f8f9fa;
+        }
+        .header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #e5e5e5;
+            padding-bottom: 1rem;
+        }
+        .job-card {
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        .job-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .dropzone {
+            border: 2px dashed #0087F7;
+            border-radius: 5px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            background-color: #f1f8fe;
+            cursor: pointer;
+        }
+        .dropzone:hover {
+            background-color: #e3f2fd;
+        }
+        #upload-progress {
+            display: none;
+        }
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+        }
+        .logo {
+            max-height: 40px;
+            margin-right: 10px;
+        }
+        .preset-card {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .preset-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .preset-card.selected {
+            border-color: #0d6efd;
+            background-color: #f0f7ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header d-flex justify-content-between align-items-center">
+            <h1>
+                <svg class="logo" xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                    <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+                </svg>
+                FormatNormalizer
+            </h1>
+            <div>
+                <span class="badge bg-success">API Status: <span id="api-status">Checking...</span></span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Convert Media Format</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="upload-form">
+                            <div id="dropzone" class="dropzone">
+                                <div id="upload-prompt">
+                                    <h5>Drag & Drop Files Here</h5>
+                                    <p>or click to select files</p>
+                                    <input type="file" id="file-input" style="display: none;" accept="video/*,audio/*,image/*">
+                                    <button type="button" id="select-file-btn" class="btn btn-primary">Select File</button>
+                                </div>
+                                <div id="upload-progress" class="mt-3">
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                    <p class="mt-2 mb-0" id="upload-status">Preparing upload...</p>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Select Target Format</label>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card preset-card" data-preset="web">
+                                            <div class="card-body">
+                                                <h6>Web</h6>
+                                                <p class="mb-0 small text-muted">MP4/H.264 optimized for web streaming</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card preset-card" data-preset="social">
+                                            <div class="card-body">
+                                                <h6>Social Media</h6>
+                                                <p class="mb-0 small text-muted">MP4/H.264 optimized for social platforms</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card preset-card" data-preset="broadcast">
+                                            <div class="card-body">
+                                                <h6>Broadcast</h6>
+                                                <p class="mb-0 small text-muted">ProRes for professional delivery</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card preset-card" data-preset="hq">
+                                            <div class="card-body">
+                                                <h6>High Quality</h6>
+                                                <p class="mb-0 small text-muted">H.264 with higher bitrates</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card preset-card" data-preset="archive">
+                                            <div class="card-body">
+                                                <h6>Archive</h6>
+                                                <p class="mb-0 small text-muted">Lossless formats for preservation</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="format" class="form-label">Custom Format (optional)</label>
+                                        <select class="form-select" id="format">
+                                            <option value="">Auto (based on preset)</option>
+                                            <option value="mp4">MP4</option>
+                                            <option value="mov">MOV (QuickTime)</option>
+                                            <option value="webm">WebM</option>
+                                            <option value="mkv">MKV (Matroska)</option>
+                                            <option value="wav">WAV (Audio)</option>
+                                            <option value="mp3">MP3 (Audio)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="codec" class="form-label">Custom Codec (optional)</label>
+                                        <select class="form-select" id="codec">
+                                            <option value="">Auto (based on preset)</option>
+                                            <option value="h264">H.264 / AVC</option>
+                                            <option value="h265">H.265 / HEVC</option>
+                                            <option value="av1">AV1</option>
+                                            <option value="vp9">VP9</option>
+                                            <option value="prores">ProRes</option>
+                                            <option value="aac">AAC (Audio)</option>
+                                            <option value="mp3">MP3 (Audio)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="preserve-metadata" checked>
+                                    <label class="form-check-label" for="preserve-metadata">Preserve Metadata</label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="enable-ai">
+                                    <label class="form-check-label" for="enable-ai">Enable AI Optimization</label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="validate-output" checked>
+                                    <label class="form-check-label" for="validate-output">Validate Output</label>
+                                </div>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" id="convert-btn" class="btn btn-primary" disabled>Convert</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Recent Jobs</h5>
+                        <button id="refresh-jobs" class="btn btn-sm btn-outline-secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                                <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                        <div id="jobs-list">
+                            <p class="text-center text-muted">No jobs yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Job Details Modal -->
+    <div class="modal fade" id="job-details-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Job Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="job-details-content">
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <a href="#" id="download-result" class="btn btn-primary" target="_blank">Download</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // API base URL - change this in production
+        const API_BASE_URL = '/api';
+
+        // DOM elements
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('file-input');
+        const selectFileBtn = document.getElementById('select-file-btn');
+        const uploadPrompt = document.getElementById('upload-prompt');
+        const uploadProgress = document.getElementById('upload-progress');
+        const uploadStatus = document.getElementById('upload-status');
+        const progressBar = document.querySelector('.progress-bar');
+        const convertBtn = document.getElementById('convert-btn');
+        const uploadForm = document.getElementById('upload-form');
+        const jobsList = document.getElementById('jobs-list');
+        const refreshJobsBtn = document.getElementById('refresh-jobs');
+        const apiStatus = document.getElementById('api-status');
+        const jobDetailsModal = new bootstrap.Modal(document.getElementById('job-details-modal'));
+        const jobDetailsContent = document.getElementById('job-details-content');
+        const downloadResultBtn = document.getElementById('download-result');
+        const presetCards = document.querySelectorAll('.preset-card');
+
+        // State
+        let selectedFile = null;
+        let selectedPreset = null;
+        let jobsData = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkApiStatus();
+            loadJobs();
+            setupEventListeners();
+        });
+
+        // Check API status
+        async function checkApiStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                if (response.ok) {
+                    const data = await response.json();
+                    apiStatus.textContent = 'Online';
+                } else {
+                    apiStatus.textContent = 'Offline';
+                    document.querySelector('.badge').classList.replace('bg-success', 'bg-danger');
+                }
+            } catch (error) {
+                apiStatus.textContent = 'Offline';
+                document.querySelector('.badge').classList.replace('bg-success', 'bg-danger');
+            }
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // File selection events
+            dropzone.addEventListener('dragover', handleDragOver);
+            dropzone.addEventListener('dragleave', handleDragLeave);
+            dropzone.addEventListener('drop', handleFileDrop);
+            selectFileBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', handleFileSelect);
+
+            // Form submission
+            uploadForm.addEventListener('submit', handleFormSubmit);
+
+            // Refresh jobs button
+            refreshJobsBtn.addEventListener('click', loadJobs);
+
+            // Preset selection
+            presetCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    presetCards.forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    selectedPreset = card.dataset.preset;
+                    updateConvertButton();
+                });
+            });
+        }
+
+        // Handle drag events
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.add('bg-light');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.remove('bg-light');
+        }
+
+        function handleFileDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.remove('bg-light');
+            
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                handleFiles(e.dataTransfer.files);
+            }
+        }
+
+        function handleFileSelect(e) {
+            if (e.target.files && e.target.files.length > 0) {
+                handleFiles(e.target.files);
+            }
+        }
+
+        function handleFiles(files) {
+            selectedFile = files[0];
+            uploadPrompt.innerHTML = `
+                <h5>${selectedFile.name}</h5>
+                <p>${formatFileSize(selectedFile.size)}</p>
+                <button type="button" id="change-file-btn" class="btn btn-outline-secondary">Change File</button>
+            `;
+            
+            document.getElementById('change-file-btn').addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            updateConvertButton();
+        }
+
+        function updateConvertButton() {
+            convertBtn.disabled = !(selectedFile && selectedPreset);
+        }
+
+        // Handle form submission
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            if (!selectedFile || !selectedPreset) {
+                return;
+            }
+            
+            // Show progress
+            uploadPrompt.style.display = 'none';
+            uploadProgress.style.display = 'block';
+            progressBar.style.width = '0%';
+            uploadStatus.textContent = 'Preparing upload...';
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('preset', selectedPreset);
+            
+            // Add optional parameters
+            const format = document.getElementById('format').value;
+            const codec = document.getElementById('codec').value;
+            const preserveMetadata = document.getElementById('preserve-metadata').checked;
+            const enableAI = document.getElementById('enable-ai').checked;
+            const validateOutput = document.getElementById('validate-output').checked;
+            
+            if (format) formData.append('format', format);
+            if (codec) formData.append('codec', codec);
+            formData.append('preserve_metadata', preserveMetadata);
+            formData.append('enable_ai', enableAI);
+            formData.append('validate_output', validateOutput);
+            
+            try {
+                // Upload and process
+                progressBar.style.width = '10%';
+                uploadStatus.textContent = 'Uploading file...';
+                
+                const response = await fetch(`${API_BASE_URL}/normalize/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                progressBar.style.width = '100%';
+                uploadStatus.textContent = 'Job submitted successfully!';
+                
+                // Reset form after a delay
+                setTimeout(() => {
+                    uploadPrompt.style.display = 'block';
+                    uploadProgress.style.display = 'none';
+                    uploadPrompt.innerHTML = `
+                        <h5>Drag & Drop Files Here</h5>
+                        <p>or click to select files</p>
+                        <input type="file" id="file-input" style="display: none;">
+                        <button type="button" id="select-file-btn" class="btn btn-primary">Select File</button>
+                    `;
+                    selectFileBtn = document.getElementById('select-file-btn');
+                    selectFileBtn.addEventListener('click', () => fileInput.click());
+                    selectedFile = null;
+                    presetCards.forEach(c => c.classList.remove('selected'));
+                    selectedPreset = null;
+                    convertBtn.disabled = true;
+                    
+                    // Refresh jobs list
+                    loadJobs();
+                }, 2000);
+                
+            } catch (error) {
+                progressBar.style.width = '0%';
+                uploadStatus.textContent = `Error: ${error.message}`;
+                
+                // Reset after a delay
+                setTimeout(() => {
+                    uploadPrompt.style.display = 'block';
+                    uploadProgress.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Load jobs
+        async function loadJobs() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/jobs?limit=10`);
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                jobsData = data.jobs;
+                
+                renderJobs(jobsData);
+            } catch (error) {
+                jobsList.innerHTML = `<p class="text-danger">Error loading jobs: ${error.message}</p>`;
+            }
+        }
+
+        // Render jobs list
+        function renderJobs(jobs) {
+            if (!jobs || jobs.length === 0) {
+                jobsList.innerHTML = '<p class="text-center text-muted">No jobs yet</p>';
+                return;
+            }
+            
+            const jobsHtml = jobs.map(job => {
+                const statusClass = getStatusClass(job.status);
+                const createdAt = new Date(job.created_at).toLocaleString();
+                const fileName = job.request?.source?.uri ? getFileName(job.request.source.uri) : 'Unknown file';
+                
+                return `
+                    <div class="card job-card" data-job-id="${job.job_id}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0">${fileName}</h6>
+                                <span class="badge ${statusClass} status-badge">${job.status}</span>
+                            </div>
+                            <p class="text-muted small mb-0">Created: ${createdAt}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            jobsList.innerHTML = jobsHtml;
+            
+            // Add click handlers for job cards
+            document.querySelectorAll('.job-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const jobId = card.dataset.jobId;
+                    showJobDetails(jobId);
+                });
+            });
+        }
+
+        // Show job details
+        async function showJobDetails(jobId) {
+            jobDetailsContent.innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            `;
+            
+            downloadResultBtn.style.display = 'none';
+            jobDetailsModal.show();
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/jobs/${jobId}`);
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                
+                const job = await response.json();
+                
+                // Show download button for completed jobs
+                if (job.status === 'completed') {
+                    downloadResultBtn.href = `${API_BASE_URL}/jobs/${jobId}/download`;
+                    downloadResultBtn.style.display = 'block';
+                } else {
+                    downloadResultBtn.style.display = 'none';
+                }
+                
+                // Format details
+                const createdAt = new Date(job.created_at).toLocaleString();
+                const updatedAt = job.updated_at ? new Date(job.updated_at).toLocaleString() : 'N/A';
+                const fileName = job.request?.source?.uri ? getFileName(job.request.source.uri) : 'Unknown file';
+                const preset = job.request?.target?.preset || 'N/A';
+                const format = job.request?.target?.format || 'Auto';
+                const codec = job.request?.target?.codec || 'Auto';
+                
+                let resultDetails = '';
+                if (job.status === 'completed' && job.result) {
+                    const fileSize = job.result.fileSize ? formatFileSize(job.result.fileSize) : 'N/A';
+                    const duration = job.result.duration ? formatDuration(job.result.duration) : 'N/A';
+                    const resolution = job.result.resolution ? 
+                        `${job.result.resolution.width}x${job.result.resolution.height}` : 'N/A';
+                    
+                    resultDetails = `
+                        <div class="card mt-3">
+                            <div class="card-header">Result</div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Format:</strong> ${job.result.format}</p>
+                                        <p><strong>Codec:</strong> ${job.result.codec}</p>
+                                        <p><strong>File Size:</strong> ${fileSize}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Duration:</strong> ${duration}</p>
+                                        <p><strong>Resolution:</strong> ${resolution}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                let performanceDetails = '';
+                if (job.performance) {
+                    const processingTime = job.performance.processingTime ? 
+                        `${job.performance.processingTime.toFixed(2)} seconds` : 'N/A';
+                    const compressionRatio = job.performance.compressionRatio ? 
+                        `${job.performance.compressionRatio.toFixed(2)}x` : 'N/A';
+                    
+                    performanceDetails = `
+                        <div class="card mt-3">
+                            <div class="card-header">Performance</div>
+                            <div class="card-body">
+                                <p><strong>Processing Time:</strong> ${processingTime}</p>
+                                <p><strong>Compression Ratio:</strong> ${compressionRatio}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                let validationDetails = '';
+                if (job.validation) {
+                    const validationStatus = job.validation.passed ? 
+                        '<span class="badge bg-success">Passed</span>' : 
+                        '<span class="badge bg-danger">Failed</span>';
+                    
+                    let issuesHtml = '';
+                    if (job.validation.issues && job.validation.issues.length > 0) {
+                        issuesHtml = `
+                            <div class="mt-2">
+                                <strong>Issues:</strong>
+                                <ul>
+                                    ${job.validation.issues.map(issue => `<li>${issue}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `;
+                    }
+                    
+                    validationDetails = `
+                        <div class="card mt-3">
+                            <div class="card-header">Validation</div>
+                            <div class="card-body">
+                                <p><strong>Status:</strong> ${validationStatus}</p>
+                                ${issuesHtml}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Error details
+                let errorDetails = '';
+                if (job.status === 'failed' && job.error) {
+                    errorDetails = `
+                        <div class="alert alert-danger mt-3">
+                            <strong>Error:</strong> ${job.error}
+                        </div>
+                    `;
+                }
+                
+                jobDetailsContent.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5>${fileName}</h5>
+                        <span class="badge ${getStatusClass(job.status)}">${job.status}</span>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <p><strong>Job ID:</strong> ${job.job_id}</p>
+                            <p><strong>Created:</strong> ${createdAt}</p>
+                            <p><strong>Updated:</strong> ${updatedAt}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Preset:</strong> ${preset}</p>
+                            <p><strong>Format:</strong> ${format}</p>
+                            <p><strong>Codec:</strong> ${codec}</p>
+                        </div>
+                    </div>
+                    ${errorDetails}
+                    ${resultDetails}
+                    ${performanceDetails}
+                    ${validationDetails}
+                `;
+                
+            } catch (error) {
+                jobDetailsContent.innerHTML = `<div class="alert alert-danger">Error loading job details: ${error.message}</div>`;
+            }
+        }
+
+        // Utility functions
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function formatDuration(seconds) {
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            
+            const parts = [];
+            if (hrs > 0) parts.push(`${hrs}h`);
+            if (mins > 0) parts.push(`${mins}m`);
+            parts.push(`${secs}s`);
+            
+            return parts.join(' ');
+        }
+
+        function getFileName(path) {
+            return path.split('/').pop();
+        }
+
+        function getStatusClass(status) {
+            switch (status) {
+                case 'pending': return 'bg-secondary';
+                case 'processing': return 'bg-primary';
+                case 'completed': return 'bg-success';
+                case 'failed': return 'bg-danger';
+                default: return 'bg-secondary';
+            }
+        }
+    </script>
+</body>
+</html>
