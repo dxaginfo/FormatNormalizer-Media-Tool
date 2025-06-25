@@ -1,0 +1,44 @@
+{
+  "source": {
+    "uri": "gs://my-bucket/source.mp4",
+    "format": "mp4"
+  },
+  "target": {
+    "format": "mp4",
+    "codec": "h264",
+    "preset": "social",
+    "parameters": {
+      "video": {
+        "crf": 20,
+        "preset": "medium",
+        "profile": "high",
+        "movflags": "+faststart",
+        "maxrate": "4M",
+        "bufsize": "8M",
+        "scale": {
+          "width": 1080,
+          "height": -1
+        }
+      },
+      "audio": {
+        "codec": "aac",
+        "bitrate": "192k"
+      },
+      "subtitles": {
+        "copy": true,
+        "language": ["eng", "spa"]
+      }
+    }
+  },
+  "options": {
+    "preserveMetadata": true,
+    "enableAI": true,
+    "validateOutput": true,
+    "priority": "normal"
+  },
+  "output": {
+    "destination": "gs://my-bucket/social/",
+    "filename": "social_video.mp4",
+    "makePublic": true
+  }
+}

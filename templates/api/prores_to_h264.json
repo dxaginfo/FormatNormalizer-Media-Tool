@@ -1,0 +1,43 @@
+{
+  "source": {
+    "uri": "gs://my-bucket/source.mov",
+    "format": "mov",
+    "metadata": {
+      "project": "Broadcast Project",
+      "client": "TV Network",
+      "tags": ["prores", "broadcast"]
+    }
+  },
+  "target": {
+    "format": "mp4",
+    "codec": "h264",
+    "preset": "broadcast",
+    "parameters": {
+      "video": {
+        "crf": 18,
+        "preset": "slow",
+        "profile": "high",
+        "level": "5.1",
+        "movflags": "+faststart",
+        "maxrate": "20M",
+        "bufsize": "25M"
+      },
+      "audio": {
+        "codec": "aac",
+        "bitrate": "320k",
+        "sample_rate": "48000"
+      }
+    }
+  },
+  "options": {
+    "preserveMetadata": true,
+    "enableAI": true,
+    "validateOutput": true,
+    "priority": "high"
+  },
+  "output": {
+    "destination": "gs://my-bucket/broadcast/",
+    "filename": "broadcast_ready.mp4",
+    "makePublic": false
+  }
+}

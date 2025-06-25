@@ -1,0 +1,39 @@
+{
+  "source": {
+    "uri": "gs://my-bucket/source.mp4",
+    "format": "mp4",
+    "metadata": {
+      "project": "My Project",
+      "client": "Client Name",
+      "tags": ["interview", "raw"]
+    }
+  },
+  "target": {
+    "format": "mp4",
+    "codec": "h264",
+    "preset": "web",
+    "parameters": {
+      "video": {
+        "crf": 23,
+        "preset": "medium",
+        "profile": "high",
+        "movflags": "+faststart"
+      },
+      "audio": {
+        "codec": "aac",
+        "bitrate": "128k"
+      }
+    }
+  },
+  "options": {
+    "preserveMetadata": true,
+    "enableAI": false,
+    "validateOutput": true,
+    "priority": "normal"
+  },
+  "output": {
+    "destination": "gs://my-bucket/output/",
+    "filename": "converted_video.mp4",
+    "makePublic": true
+  }
+}

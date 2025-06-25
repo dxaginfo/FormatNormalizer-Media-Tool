@@ -1,0 +1,83 @@
+# FormatNormalizer presets configuration
+
+presets:
+  web:
+    description: "Optimized for web delivery, good balance of quality and file size"
+    video:
+      crf: 23
+      preset: "medium"
+      profile: "high"
+      movflags: "+faststart"
+    audio:
+      codec: "aac"
+      bitrate: "128k"
+    formats:
+      - mp4
+      - webm
+      - mp3
+      - jpg
+      - png
+
+  social:
+    description: "Optimized for social media platforms"
+    video:
+      crf: 20
+      preset: "medium"
+      profile: "high"
+      movflags: "+faststart"
+      maxrate: "4M"
+      bufsize: "8M"
+    audio:
+      codec: "aac"
+      bitrate: "192k"
+    formats:
+      - mp4
+      - mov
+      - mp3
+      - jpg
+
+  broadcast:
+    description: "High quality for broadcast delivery"
+    video:
+      preset: "slow"
+      profile: "high"
+      level: "5.1"
+      pix_fmt: "yuv422p"
+    audio:
+      codec: "pcm_s24le"
+      sample_rate: "48000"
+    formats:
+      - mov
+      - mxf
+      - wav
+
+  archive:
+    description: "Maximum quality for archival purposes"
+    video:
+      codec: "prores_ks"
+      profile: "4444"
+      pix_fmt: "yuv444p10le"
+    audio:
+      codec: "pcm_s24le"
+      sample_rate: "48000"
+    formats:
+      - mov
+      - mxf
+      - wav
+      - tiff
+
+  mobile:
+    description: "Optimized for mobile devices with lower bandwidth"
+    video:
+      crf: 26
+      preset: "medium"
+      movflags: "+faststart"
+      maxrate: "2M"
+      bufsize: "4M"
+    audio:
+      codec: "aac"
+      bitrate: "96k"
+    formats:
+      - mp4
+      - mp3
+      - jpg

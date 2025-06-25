@@ -1,0 +1,42 @@
+# FormatNormalizer Cloud Functions configuration
+
+functions:
+  normalize_media:
+    runtime: python39
+    memory: 2048MB
+    timeout: 540s
+    entry_point: normalize_media
+    trigger: http
+    environment_variables:
+      GCS_BUCKET_NAME: "format-normalizer-media"
+      GEMINI_API_KEY: "${GEMINI_API_KEY}"
+      FIRESTORE_COLLECTION: "normalization_jobs"
+      LOG_LEVEL: "INFO"
+      TEMP_DIR: "/tmp"
+
+  batch_processor:
+    runtime: python39
+    memory: 4096MB
+    timeout: 540s
+    entry_point: batch_processor
+    trigger: pubsub
+    topic: format-normalizer-batch-jobs
+    environment_variables:
+      GCS_BUCKET_NAME: "format-normalizer-media"
+      GEMINI_API_KEY: "${GEMINI_API_KEY}"
+      FIRESTORE_COLLECTION: "normalization_jobs"
+      LOG_LEVEL: "INFO"
+      TEMP_DIR: "/tmp"
+
+  cleanup_jobs:
+    runtime: python39
+    memory: 256MB
+    timeout: 60s
+    entry_point: cleanup_old_jobs
+    trigger: schedule
+    schedule: "0 0 * * *"  # Daily at midnight
+    environment_variables:
+      GCS_BUCKET_NAME: "format-normalizer-media"
+      FIRESTORE_COLLECTION: "normalization_jobs"
+      RETENTION_DAYS: "30"
+      TEMP_DIR: "/tmp"

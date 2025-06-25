@@ -1,0 +1,27 @@
+# FormatNormalizer Cloud Run configuration
+
+service: format-normalizer-api
+runtime: python39
+env: standard
+memory: 2Gi
+cpu: 2
+concurrency: 80
+timeout: 600s
+
+environment_variables:
+  GCS_BUCKET_NAME: "format-normalizer-media"
+  GEMINI_API_KEY: "${GEMINI_API_KEY}"
+  FIRESTORE_COLLECTION: "normalization_jobs"
+  LOG_LEVEL: "INFO"
+  TEMP_DIR: "/tmp"
+  CLOUD_RUN: "true"
+  MAX_FILE_SIZE: "2000000000"  # 2GB
+
+autoscaling:
+  min_instances: 0
+  max_instances: 10
+  metric: concurrency
+  target: 30
+
+vpc_connector: format-normalizer-vpc
+vpc_egress: all-traffic

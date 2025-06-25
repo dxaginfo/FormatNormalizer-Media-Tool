@@ -1,0 +1,45 @@
+{
+  "source": {
+    "uris": [
+      "gs://my-bucket/source1.mp4",
+      "gs://my-bucket/source2.mp4"
+    ],
+    "format": "mp4",
+    "metadata": {
+      "project": "My Project",
+      "client": "Client Name",
+      "tags": ["project_a", "batch_1"]
+    }
+  },
+  "target": {
+    "format": "mp4",
+    "codec": "h265",
+    "preset": "web",
+    "parameters": {
+      "video": {
+        "crf": 26,
+        "preset": "medium",
+        "profile": "main"
+      },
+      "audio": {
+        "codec": "aac",
+        "bitrate": "128k"
+      }
+    }
+  },
+  "options": {
+    "preserveMetadata": true,
+    "enableAI": true,
+    "validateOutput": true,
+    "priority": "normal",
+    "notifications": {
+      "email": "user@example.com",
+      "webhookUrl": "https://example.com/webhook"
+    }
+  },
+  "output": {
+    "destination": "gs://my-bucket/output/",
+    "filenameTemplate": "{{basename}}_converted.{{ext}}",
+    "makePublic": false
+  }
+}
