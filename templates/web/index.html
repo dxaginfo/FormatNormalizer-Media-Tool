@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FormatNormalizer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <h1>FormatNormalizer</h1>
+      <nav class="nav-links">
+        <a href="/">Home</a>
+        <a href="/jobs">Jobs</a>
+        <a href="/docs">API Docs</a>
+        <a href="https://github.com/dxaginfo/FormatNormalizer-Media-Tool" target="_blank">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <h2 class="card-title">Media Format Normalization</h2>
+      <p>Convert and normalize media files to ensure compatibility across different platforms and workflows.</p>
+      
+      <div id="alert-container"></div>
+      
+      <form id="normalization-form">
+        <div class="form-group">
+          <label for="source-type">Source Type</label>
+          <select id="source-type" name="source-type">
+            <option value="file">File Upload</option>
+            <option value="url">URL</option>
+          </select>
+        </div>
+        
+        <div id="file-input-group" class="form-group">
+          <label for="file-input">Select Media File</label>
+          <input type="file" id="file-input" name="file">
+        </div>
+        
+        <div id="url-input-group" class="form-group" style="display: none;">
+          <label for="url-input">Media URL</label>
+          <input type="url" id="url-input" name="source_url" placeholder="https://example.com/video.mp4">
+        </div>
+        
+        <div class="form-group">
+          <label for="target-format">Target Format</label>
+          <select id="target-format" name="target-format">
+            <option value="mp4">MP4</option>
+            <option value="mov">MOV</option>
+            <option value="webm">WebM</option>
+            <option value="mkv">MKV</option>
+            <option value="mp3">MP3 (Audio Only)</option>
+            <option value="wav">WAV (Audio Only)</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="target-codec">Target Codec</label>
+          <select id="target-codec" name="target-codec">
+            <option value="h264">H.264 / AVC</option>
+            <option value="h265">H.265 / HEVC</option>
+            <option value="prores">ProRes</option>
+            <option value="av1">AV1</option>
+            <option value="vp9">VP9</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="preset">Quality Preset</label>
+          <select id="preset" name="preset">
+            <option value="web">Web</option>
+            <option value="social">Social Media</option>
+            <option value="standard" selected>Standard</option>
+            <option value="broadcast">Broadcast</option>
+            <option value="archive">Archive</option>
+            <option value="mobile">Mobile</option>
+          </select>
+        </div>
+        
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="enable-ai" name="enable_ai" value="true">
+          <label for="enable-ai">Enable AI Optimization</label>
+        </div>
+        
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="validate-output" name="validate_output" value="true" checked>
+          <label for="validate-output">Validate Output</label>
+        </div>
+        
+        <div class="form-group">
+          <label for="priority">Processing Priority</label>
+          <select id="priority" name="priority">
+            <option value="low">Low</option>
+            <option value="normal" selected>Normal</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+        
+        <div class="btn-group">
+          <button type="submit" id="submit-btn" class="btn">Normalize Media</button>
+          <button type="reset" class="btn btn-secondary">Reset</button>
+        </div>
+      </form>
+    </div>
+    
+    <div id="job-status-container" class="card" style="display: none;">
+      <h2 class="card-title">Job Status</h2>
+      
+      <div class="progress">
+        <div id="progress-bar" class="progress-bar"></div>
+      </div>
+      
+      <div id="status-text"></div>
+      
+      <div id="result-container" style="display: none;">
+        <h3>Normalization Result</h3>
+        <div id="result-details" class="job-details"></div>
+        
+        <div id="download-container" style="margin-top: 20px;">
+          <a id="download-link" href="#" class="btn" target="_blank" download>Download Normalized Media</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/api-client.js"></script>
+  <script>
+    // Initialize API client
+    const apiClient = new FormatNormalizerClient();
+    
+    // DOM elements
+    const form = document.getElementById('normalization-form');
+    const sourceTypeSelect = document.getElementById('source-type');
+    const fileInputGroup = document.getElementById('file-input-group');
+    const urlInputGroup = document.getElementById('url-input-group');
+    const fileInput = document.getElementById('file-input');
+    const urlInput = document.getElementById('url-input');
+    const targetFormat = document.getElementById('target-format');
+    const targetCodec = document.getElementById('target-codec');
+    const preset = document.getElementById('preset');
+    const enableAI = document.getElementById('enable-ai');
+    const validateOutput = document.getElementById('validate-output');
+    const priority = document.getElementById('priority');
+    const submitBtn = document.getElementById('submit-btn');
+    const alertContainer = document.getElementById('alert-container');
+    const jobStatusContainer = document.getElementById('job-status-container');
+    const progressBar = document.getElementById('progress-bar');
+    const statusText = document.getElementById('status-text');
+    const resultContainer = document.getElementById('result-container');
+    const resultDetails = document.getElementById('result-details');
+    const downloadContainer = document.getElementById('download-container');
+    const downloadLink = document.getElementById('download-link');
+    
+    // Source type toggle
+    sourceTypeSelect.addEventListener('change', function() {
+      if (this.value === 'file') {
+        fileInputGroup.style.display = 'block';
+        urlInputGroup.style.display = 'none';
+      } else {
+        fileInputGroup.style.display = 'none';
+        urlInputGroup.style.display = 'block';
+      }
+    });
+    
+    // Show appropriate codecs based on format
+    targetFormat.addEventListener('change', function() {
+      const format = this.value;
+      targetCodec.innerHTML = '';
+      
+      let codecs;
+      switch (format) {
+        case 'mp4':
+          codecs = [
+            { value: 'h264', text: 'H.264 / AVC' },
+            { value: 'h265', text: 'H.265 / HEVC' },
+            { value: 'av1', text: 'AV1' }
+          ];
+          break;
+        case 'mov':
+          codecs = [
+            { value: 'h264', text: 'H.264 / AVC' },
+            { value: 'prores', text: 'ProRes' },
+            { value: 'dnxhd', text: 'DNxHD' }
+          ];
+          break;
+        case 'webm':
+          codecs = [
+            { value: 'vp9', text: 'VP9' },
+            { value: 'av1', text: 'AV1' }
+          ];
+          break;
+        case 'mkv':
+          codecs = [
+            { value: 'h264', text: 'H.264 / AVC' },
+            { value: 'h265', text: 'H.265 / HEVC' },
+            { value: 'av1', text: 'AV1' },
+            { value: 'vp9', text: 'VP9' }
+          ];
+          break;
+        case 'mp3':
+          codecs = [
+            { value: 'mp3', text: 'MP3' }
+          ];
+          break;
+        case 'wav':
+          codecs = [
+            { value: 'pcm_s16le', text: 'PCM 16-bit' },
+            { value: 'pcm_s24le', text: 'PCM 24-bit' }
+          ];
+          break;
+        default:
+          codecs = [
+            { value: 'h264', text: 'H.264 / AVC' }
+          ];
+      }
+      
+      codecs.forEach(codec => {
+        const option = document.createElement('option');
+        option.value = codec.value;
+        option.textContent = codec.text;
+        targetCodec.appendChild(option);
+      });
+    });
+    
+    // Form submission
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      // Clear previous alerts
+      alertContainer.innerHTML = '';
+      
+      // Validate form
+      if (sourceTypeSelect.value === 'file' && !fileInput.files[0]) {
+        showAlert('Please select a file to upload', 'error');
+        return;
+      }
+      
+      if (sourceTypeSelect.value === 'url' && !urlInput.value) {
+        showAlert('Please enter a valid URL', 'error');
+        return;
+      }
+      
+      // Disable form and show loading
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+      
+      try {
+        // Prepare options
+        const options = {
+          target: {
+            format: targetFormat.value,
+            codec: targetCodec.value
+          },
+          preset: preset.value,
+          enable_ai: enableAI.checked,
+          validate_output: validateOutput.checked,
+          priority: priority.value
+        };
+        
+        // Submit normalization job
+        let response;
+        if (sourceTypeSelect.value === 'file') {
+          response = await apiClient.normalizeFile(fileInput.files[0], options);
+        } else {
+          response = await apiClient.normalizeUrl(urlInput.value, options);
+        }
+        
+        // Show job status section
+        jobStatusContainer.style.display = 'block';
+        updateStatus({ status: 'pending', job_id: response.job_id });
+        
+        // Start polling for job status
+        apiClient.pollJobStatus(response.job_id, updateStatus)
+          .then(finalStatus => {
+            // Job completed
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Normalize Media';
+            
+            if (finalStatus.status === 'completed' && finalStatus.result_url) {
+              downloadLink.href = finalStatus.result_url;
+              downloadContainer.style.display = 'block';
+            }
+          })
+          .catch(error => {
+            showAlert(`Error monitoring job: ${error.message}`, 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Normalize Media';
+          });
+        
+      } catch (error) {
+        showAlert(`Error submitting job: ${error.message}`, 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Normalize Media';
+      }
+    });
+    
+    // Helper function to show alerts
+    function showAlert(message, type = 'info') {
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.textContent = message;
+      alertContainer.appendChild(alert);
+      
+      // Auto-dismiss after 5 seconds
+      setTimeout(() => {
+        alert.remove();
+      }, 5000);
+    }
+    
+    // Update job status UI
+    function updateStatus(status) {
+      // Update status text
+      let statusHtml = `<p><strong>Job ID:</strong> ${status.job_id}</p>`;
+      statusHtml += `<p><strong>Status:</strong> <span class="badge badge-${status.status}">${status.status}</span></p>`;
+      
+      if (status.created_at) {
+        statusHtml += `<p><strong>Created:</strong> ${new Date(status.created_at).toLocaleString()}</p>`;
+      }
+      
+      if (status.completed_at) {
+        statusHtml += `<p><strong>Completed:</strong> ${new Date(status.completed_at).toLocaleString()}</p>`;
+      }
+      
+      if (status.error) {
+        statusHtml += `<p><strong>Error:</strong> ${status.error}</p>`;
+      }
+      
+      statusText.innerHTML = statusHtml;
+      
+      // Update progress bar
+      let progress = 0;
+      switch (status.status) {
+        case 'pending':
+          progress = 10;
+          break;
+        case 'processing':
+          progress = 50;
+          break;
+        case 'completed':
+          progress = 100;
+          break;
+        case 'failed':
+          progress = 100;
+          break;
+      }
+      progressBar.style.width = `${progress}%`;
+      
+      // Show result details if completed
+      if (status.status === 'completed' || status.status === 'failed') {
+        resultContainer.style.display = 'block';
+        resultDetails.textContent = JSON.stringify(status.result || status, null, 2);
+      }
+    }
+  </script>
+</body>
+</html>
